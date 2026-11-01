@@ -1,0 +1,65 @@
+# ---------------------------------------------------------------------------
+# Docker Compose file: runs PostgreSQL for us.
+#
+# WHY DOCKER?
+# PostgreSQL is a real database server. Installing it directly on Ubuntu means
+# dealing with system users, `pg_hba.conf` permissions and a service that keeps
+# running forever. Docker gives us a throwaway Postgres in one command, and
+# `docker compose down -v` removes every trace of it.
+#
+# COMMANDS YOU WILL USE
+#   docker compose up -d        # start Postgres in the background
+#   docker compose ps           # check it is healthy
+#   docker compose logs -f db   # watch its log output
+#   docker compose down         # stop it (keeps the saved conversations)
+#   docker compose down -v      # stop it AND delete all saved conversations
+#
+# NOTE: MLflow is NOT in here. MLflow runs as a plain Python program
+# (`mlflow ui`) reading a local folder, which is simpler and needs no server.
+# ---------------------------------------------------------------------------
+
+services:
+  db:
+    # The official PostgreSQL image. `16-alpine` is version 16 on a tiny
+    # Alpine Linux base, so the download is small.
+    image: postgres:16-alpine
+
+    # A fixed name makes `docker logs studyhelper-db` predictable.
+    container_name: studyhelper-db
+
+    # Restart the container if it crashes, or after you reboot - but not if
+    # you deliberately stopped it with `docker compose down`.
+    restart: unless-stopped
+
+    # These three variables tell the Postgres image to create a user, a
+    # password and an empty database on first start. They must match the
+    # POSTGRES_URI in your `.env` file.
+    environment:
+      POSTGRES_USER: studyhelper
+      POSTGRES_PASSWORD: studyhelper
+      POSTGRES_DB: studyhelper
+
+    ports:
+      # "HOST:CONTAINER" - we expose the container's port 5432 on the host's
+      # port 5433. Using 5433 on purpose: if you already have Postgres
+      # installed on this machine it owns 5432, and the two would clash.
+      - "5433:5432"
+
+    volumes:
+      # Keeps the database files in a Docker-managed volume so your saved
+      # conversations survive `docker compose down` and machine reboots.
+      - studyhelper-pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      # `pg_isready` is a tiny Postgres utility that answers "are you
+      # accepting connections yet?". Without this, `docker compose up -d`
+      # returns before Postgres has finished starting and our Python code
+      # would fail to connect on the first try.
+      test: ["CMD-SHELL", "pg_isready -U studyhelper -d studyhelper"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  # Declares the named volume used above. Deleted by `docker compose down -v`.
+  studyhelper-pgdata:

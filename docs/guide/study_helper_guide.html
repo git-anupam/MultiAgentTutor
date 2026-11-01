@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Study Helper: A Beginner's Guide to Multi-Agent Chatbots</title>
+<style>
+  /* ------------------------------------------------------------------
+     Page setup for printing / PDF (A4). Works in Chrome, Firefox and
+     WeasyPrint. On screen the page is a centred column.
+     ------------------------------------------------------------------ */
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-center { content: "Page " counter(page); font-size: 9pt; color: #6b7280; }
+  }
+  :root {
+    --ink: #1d2433; --muted: #5b6475; --accent: #2f5d9e; --accent-soft: #e8eef8;
+    --green-soft: #e7f4ec; --green: #2d7a4b; --amber-soft: #fdf3e1; --amber: #9a6510;
+    --rule: #d6dbe4; --code-bg: #f4f6f9;
+  }
+  html { background: #ffffff; }
+  /* Keep background colours when printing (the part banners are white text
+     on blue; without this, browsers may drop the blue and hide the text). */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: "DejaVu Sans", "Noto Sans", "Liberation Sans", Arial, sans-serif;
+    font-size: 10.5pt; line-height: 1.55; color: var(--ink); background: #ffffff;
+    max-width: 820px; margin: 0 auto; padding: 24px 16px 48px;
+  }
+  @media print { body { max-width: none; padding: 0; } }
+
+  h1, h2, h3 { line-height: 1.25; color: var(--ink); }
+  h1 { font-size: 22pt; margin: 0 0 6px; }
+  h2 { font-size: 15pt; margin: 28px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--accent-soft); }
+  h3 { font-size: 11.5pt; margin: 18px 0 6px; color: var(--accent); }
+  p { margin: 6px 0 10px; }
+  ul, ol { margin: 6px 0 10px; padding-left: 22px; }
+  li { margin: 3px 0; }
+  a { color: var(--accent); text-decoration: none; }
+  code { font-family: "DejaVu Sans Mono", "Noto Sans Mono", monospace; font-size: 9pt;
+         background: var(--code-bg); padding: 1px 4px; border-radius: 3px; }
+  pre { font-family: "DejaVu Sans Mono", "Noto Sans Mono", monospace; font-size: 8.6pt; line-height: 1.45;
+        background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px;
+        padding: 10px 12px; white-space: pre-wrap; overflow-wrap: anywhere; break-inside: avoid; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 14px; font-size: 9.6pt; break-inside: avoid; }
+  th, td { border: 1px solid var(--rule); padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--accent-soft); }
+
+  figure { margin: 12px 0 16px; break-inside: avoid; text-align: center; }
+  figure svg { width: 100%; height: auto; max-width: 680px; }
+  figcaption { font-size: 9pt; color: var(--muted); margin-top: 4px; }
+
+  .part { break-before: page; margin-top: 0; padding: 14px 18px; background: var(--accent);
+          color: #ffffff; border-radius: 8px; }
+  .part small { display: block; font-size: 10.5pt; font-weight: normal; opacity: 0.9; margin-top: 4px; }
+  .chapter { break-before: page; }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-soft);
+             padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0 14px; break-inside: avoid; }
+  .callout.project { border-color: var(--green); background: var(--green-soft); }
+  .callout.warn { border-color: var(--amber); background: var(--amber-soft); }
+  .callout b.label { display: block; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+
+  .cover { text-align: center; padding-top: 80px; }
+  .cover h1 { font-size: 28pt; }
+  .cover .sub { font-size: 13pt; color: var(--muted); margin-bottom: 40px; }
+  .cover .meta { margin-top: 60px; font-size: 10pt; color: var(--muted); }
+  .toc { columns: 2; column-gap: 28px; font-size: 10pt; }
+  .toc li { break-inside: avoid; }
+  .key { font-weight: bold; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- =================================================================== -->
+<!-- COVER                                                               -->
+<!-- =================================================================== -->
+<section class="cover">
+  <h1>The Study Helper</h1>
+  <div class="sub">A beginner's guide to multi-agent chatbots, tool calling,<br>checkpointing and tracing &mdash; explained through one small project</div>
+
+  <figure>
+    <svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="You talk to a router, which sends your message to the Tutor or the Quiz Maker">
+      <defs><marker id="c0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f5d9e"/></marker></defs>
+      <g fill="#e8eef8" stroke="#2f5d9e" stroke-width="1.5">
+        <rect x="10" y="50" width="120" height="50" rx="10"/>
+        <rect x="200" y="50" width="120" height="50" rx="10"/>
+        <rect x="400" y="10" width="200" height="50" rx="10"/>
+        <rect x="400" y="90" width="200" height="50" rx="10"/>
+      </g>
+      <g stroke="#2f5d9e" stroke-width="1.5" fill="none" marker-end="url(#c0)">
+        <line x1="130" y1="75" x2="198" y2="75"/>
+        <line x1="320" y1="68" x2="398" y2="38"/>
+        <line x1="320" y1="82" x2="398" y2="112"/>
+        <!-- Handoffs go both ways: the Tutor asks the Quiz Maker for a quiz,
+             and the Quiz Maker sends the finished quiz back to the Tutor. -->
+        <line x1="500" y1="62" x2="500" y2="88" marker-start="url(#c0)"/>
+      </g>
+      <g font-family="DejaVu Sans, Arial, sans-serif" font-size="14" fill="#1d2433" text-anchor="middle">
+        <text x="70" y="80">You</text>
+        <text x="260" y="80">Router</text>
+        <text x="500" y="32">Tutor</text>
+        <text x="500" y="50" font-size="11" fill="#5b6475">explains, presents, grades</text>
+        <text x="500" y="112">Quiz Maker</text>
+        <text x="500" y="130" font-size="11" fill="#5b6475">writes quizzes with a tool</text>
+        <text x="560" y="72" font-size="10" fill="#5b6475">handoffs</text>
+        <text x="560" y="84" font-size="10" fill="#5b6475">(both ways)</text>
+      </g>
+    </svg>
+  </figure>
+
+  <div class="meta">Built with Ollama, LangGraph, LangChain, PostgreSQL, MLflow and Docker.<br>Free, open source, runs entirely on your own computer.</div>
+</section>
+
+<!-- =================================================================== -->
+<!-- HOW TO READ + CONTENTS                                              -->
+<!-- =================================================================== -->
+<section class="chapter">
+  <h2>How to read this guide</h2>
+  <p>This guide assumes you know a little Python and nothing about AI. It has two parts:</p>
+  <ul>
+    <li><b>Part 1 &mdash; The building blocks.</b> Every idea the project uses, explained from zero, each with a short
+      <span class="key">"In this project"</span> box saying where to find it in the code.</li>
+    <li><b>Part 2 &mdash; The project.</b> How those ideas fit together into a working chatbot, followed by one real message
+      traced from the moment you press Enter to the moment the answer appears.</li>
+  </ul>
+  <p>If you only have ten minutes, read chapters 1, 6, 7 and 21.</p>
+
+  <h2>Contents</h2>
+  <ol class="toc">
+    <li><b>Part 1 &mdash; The building blocks</b></li>
+    <li><a href="#c1">Language models (LLMs)</a></li>
+    <li><a href="#c2">Running a model locally: Ollama</a></li>
+    <li><a href="#c3">Messages, prompts and temperature</a></li>
+    <li><a href="#c4">LangChain and LangGraph</a></li>
+    <li><a href="#c5">Graphs: nodes, edges and state</a></li>
+    <li><a href="#c6">What is an agent?</a></li>
+    <li><a href="#c7">Tools and tool calling</a></li>
+    <li><a href="#c8">Structured output and JSON</a></li>
+    <li><a href="#c9">Multi-agent systems</a></li>
+    <li><a href="#c10">Routers</a></li>
+    <li><a href="#c11">Handoffs</a></li>
+    <li><a href="#c12">Clarifying questions: pause and resume</a></li>
+    <li><a href="#c13">Checkpointing, threads and PostgreSQL</a></li>
+    <li><a href="#c14">Docker</a></li>
+    <li><a href="#c15">Streaming</a></li>
+    <li><a href="#c16">Tracing with MLflow</a></li>
+    <li><a href="#c17">The supporting cast: venv, .env, logging</a></li>
+    <li><b>Part 2 &mdash; The project</b></li>
+    <li><a href="#c18">What the Study Helper does</a></li>
+    <li><a href="#c19">The big picture</a></li>
+    <li><a href="#c20">The graph of this project</a></li>
+    <li><a href="#c21">One message, start to finish</a></li>
+    <li><a href="#c22">A clarifying question, start to finish</a></li>
+    <li><a href="#c23">The life of a quiz</a></li>
+    <li><a href="#c24">What the model does, what code does</a></li>
+    <li><a href="#c25">Folder map</a></li>
+    <li><a href="#c26">Running it</a></li>
+    <li><a href="#c27">Adding a third agent</a></li>
+    <li><a href="#c28">Glossary</a></li>
+  </ol>
+</section>
+
+<!-- =================================================================== -->
+<!-- PART 1                                                              -->
+<!-- =================================================================== -->
+<h1 class="part">Part 1 &mdash; The building blocks<small>Every concept the project uses, from zero</small></h1>
+
+<!-- 1 ------------------------------------------------------------------ -->
+<h2 id="c1">1. Language models (LLMs)</h2>
+<p>A <b>large language model</b> (LLM) is a program that has read an enormous amount of text and learned one skill:
+<b>given some text, predict what text comes next</b>. Repeat that prediction word after word and you get answers,
+explanations, stories &mdash; or quiz questions.</p>
+
+<figure>
+  <svg viewBox="0 0 640 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Text goes into the model, text comes out">
+    <defs><marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f5d9e"/></marker></defs>
+    <g fill="#ffffff" stroke="#2f5d9e" stroke-width="1.5">
+      <rect x="10" y="30" width="180" height="70" rx="8"/>
+      <rect x="450" y="30" width="180" height="70" rx="8"/>
+    </g>
+    <rect x="240" y="20" width="160" height="90" rx="10" fill="#2f5d9e"/>
+    <g stroke="#2f5d9e" stroke-width="1.5" marker-end="url(#m1)">
+      <line x1="190" y1="65" x2="238" y2="65"/>
+      <line x1="400" y1="65" x2="448" y2="65"/>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1d2433">
+      <text x="100" y="58">Text in</text>
+      <text x="100" y="78" font-size="11" fill="#5b6475">"What is gravity?"</text>
+      <text x="320" y="62" fill="#ffffff">Language model</text>
+      <text x="320" y="82" font-size="11" fill="#dbe6f7">predicts the next words</text>
+      <text x="540" y="58">Text out</text>
+      <text x="540" y="78" font-size="11" fill="#5b6475">"Gravity is the force..."</text>
+    </g>
+  </svg>
+  <figcaption>Figure 1. At heart, a language model turns text into more text.</figcaption>
+</figure>
+
+<h3>Three facts that shape everything else</h3>
+<ol>
+  <li><b>It works in tokens.</b> Text is cut into small pieces called <i>tokens</i> (roughly a short word or part of a
+    word). Models are measured and limited in tokens: "328 tokens" in a trace means 328 of these pieces were processed.</li>
+  <li><b>It has no memory.</b> A model does not remember your previous message. Every call starts from nothing, so the
+    program must send the <i>whole conversation so far</i> each time. Memory is the program's job, not the model's
+    (chapter 13).</li>
+  <li><b>It can only produce text.</b> It cannot look things up, run code or save files by itself. To do those things,
+    the program must do them on its behalf (chapter 7).</li>
+</ol>
+<div class="callout"><b class="label">Why it can be wrong</b>
+A model predicts <i>plausible</i> text, not <i>checked</i> text. It can state a wrong fact confidently. Small models
+also follow instructions less reliably than large ones &mdash; a theme you will meet again in chapter 24.</div>
+
+<!-- 2 ------------------------------------------------------------------ -->
+<h2 id="c2">2. Running a model locally: Ollama</h2>
+<p>Most people use language models through a company's website or paid API. This project instead runs an
+<b>open-source model on your own computer</b>, using a free program called <b>Ollama</b>. Nothing leaves your machine
+and there is no API key or bill.</p>
+<ul>
+  <li>Ollama downloads models (<code>ollama pull qwen2.5:7b</code>) and runs them in the background.</li>
+  <li>It offers a small local web address, <code>http://localhost:11434</code>, that programs send text to.</li>
+  <li><code>qwen2.5:7b</code> means: the Qwen 2.5 model, <b>7 billion parameters</b>. Parameters are the numbers the model
+    learned; more parameters usually means smarter but slower and hungrier for memory. A 7B model needs about 8&nbsp;GB of RAM.</li>
+  <li>Without a graphics card (GPU), the computer's main processor (CPU) does the work, so one reply can take
+    10&ndash;90 seconds. That is why the project logs how long each call takes.</li>
+</ul>
+<div class="callout project"><b class="label">In this project</b>
+<code>core/llm.py</code> builds the connection (<code>build_chat_model()</code>). The model name comes from the
+<code>OLLAMA_MODEL</code> setting in <code>.env</code>. <code>scripts/check_ollama.py</code> checks that Ollama is
+running, the model is downloaded, and the model can call tools.</div>
+
+<!-- 3 ------------------------------------------------------------------ -->
+<h2 id="c3">3. Messages, prompts and temperature</h2>
+<p>Chat models do not take one block of text; they take a <b>list of messages</b>, each with a <b>role</b>:</p>
+<table>
+  <tr><th>Role</th><th>Who wrote it</th><th>Example</th></tr>
+  <tr><td><b>system</b></td><td>The programmer: standing instructions</td><td>"You are the Tutor, a friendly study helper..."</td></tr>
+  <tr><td><b>human</b></td><td>The user</td><td>"what is photosynthesis?"</td></tr>
+  <tr><td><b>ai</b></td><td>The model, earlier in the chat</td><td>"Photosynthesis is how plants..."</td></tr>
+  <tr><td><b>tool</b></td><td>The program, reporting a tool's result</td><td>"Notes on gravity: ..."</td></tr>
+</table>
+<p>The <b>system prompt</b> is the most important message: it is the model's job description. Changing a sentence in it
+changes the model's behaviour &mdash; for example, adding "Always end with a fun fact" made the Tutor do exactly that.</p>
+<p><b>Temperature</b> is a creativity dial between 0 and 1. At 0 the model always picks the most likely next word
+(predictable, good for decisions and grading); higher values add variety (good for writing different quizzes).</p>
+<div class="callout project"><b class="label">In this project</b>
+Each agent's system prompt is a Markdown file in <code>agents/prompts/</code> (<code>tutor.md</code>,
+<code>quiz_maker.md</code>, ...), read once when the chat starts (<code>core/prompts.py</code>). The system prompt is
+added on the way out to the model and is <i>not</i> stored in the conversation, so each agent sees only its own
+instructions. Temperatures: 0.2 by default, 0.4 for the Quiz Maker, 0.0 for the router.</div>
+
+<!-- 4 ------------------------------------------------------------------ -->
+<h2 id="c4">4. LangChain and LangGraph</h2>
+<p>Two free Python libraries do the heavy lifting:</p>
+<table>
+  <tr><th>Library</th><th>What it gives us</th><th>Used for</th></tr>
+  <tr><td><b>LangChain</b></td><td>Standard building blocks for talking to models</td>
+      <td><code>ChatOllama</code> (the model connection), message classes (<code>HumanMessage</code>, <code>AIMessage</code>, ...), the <code>@tool</code> decorator</td></tr>
+  <tr><td><b>LangGraph</b></td><td>A way to build a program as a <b>flowchart of steps</b> that share data, can pause, and can be saved</td>
+      <td>The router, the agents, handoffs, pausing for questions, checkpointing</td></tr>
+</table>
+<p>A useful way to think about it: LangChain is the <i>bricks</i>, LangGraph is the <i>building plan</i>.</p>
+
+<!-- 5 ------------------------------------------------------------------ -->
+<h2 id="c5">5. Graphs: nodes, edges and state</h2>
+<p>LangGraph describes a program as a <b>graph</b> &mdash; the computer-science word for a flowchart:</p>
+<ul>
+  <li><b>Nodes</b> are steps. Each node is an ordinary Python function.</li>
+  <li><b>Edges</b> are arrows saying which step runs next. <code>START</code> and <code>END</code> mark the beginning and end.</li>
+  <li><b>State</b> is one shared dictionary that every node can read. A node does not pass data directly to the next
+    node; it returns the <i>changes</i> it wants, and LangGraph merges them into the state.</li>
+</ul>
+<pre><code>def tutor_node(state):
+    reply = ...call the model with state["messages"]...
+    return {"messages": [reply]}        # only the CHANGE, not the whole state
+
+builder = StateGraph(ChatState)
+builder.add_node("tutor", tutor_node)
+builder.add_edge(START, "tutor")
+builder.add_edge("tutor", END)
+graph = builder.compile()</code></pre>
+<h3>Three more ideas you will meet</h3>
+<ul>
+  <li><b>Reducer.</b> A rule for merging a change into the state. The <code>messages</code> field uses
+    <code>add_messages</code>, which <i>appends</i> new messages instead of replacing the list. That is how the
+    conversation grows.</li>
+  <li><b>Conditional edge.</b> An arrow whose destination is chosen at run time by a function that looks at the state
+    &mdash; "if a question is pending go to <code>ask_user</code>, otherwise finish".</li>
+  <li><b>Command.</b> A node can return <code>Command(goto="quiz_maker", update={...})</code> to change the state
+    <i>and</i> choose the next node in one go.</li>
+</ul>
+<div class="callout project"><b class="label">In this project</b>
+The state is defined in <code>core/state.py</code> (the conversation, the current quiz, a pending question, and some
+handoff bookkeeping). The graph is built in <code>core/graph.py</code>; its picture is in chapter 20.</div>
+
+<!-- 6 ------------------------------------------------------------------ -->
+<h2 id="c6" class="chapter">6. What is an agent?</h2>
+<p>An <b>agent</b> is a language model given a job and a way to act. Where a plain chatbot only answers, an agent can
+decide to <i>do</i> something &mdash; call a tool, ask a question, pass work to another agent &mdash; and then carry on.</p>
+
+<figure>
+  <svg viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An agent is a system prompt, a language model, tools and a node function">
+    <defs><marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f5d9e"/></marker></defs>
+    <rect x="5" y="5" width="630" height="220" rx="12" fill="#f7f9fc" stroke="#2f5d9e" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <g fill="#ffffff" stroke="#2f5d9e" stroke-width="1.5">
+      <rect x="25" y="45" width="180" height="64" rx="8"/>
+      <rect x="430" y="45" width="185" height="64" rx="8"/>
+      <rect x="130" y="145" width="380" height="60" rx="8"/>
+    </g>
+    <rect x="230" y="45" width="180" height="64" rx="8" fill="#2f5d9e"/>
+    <g stroke="#2f5d9e" stroke-width="1.5" marker-end="url(#m2)">
+      <line x1="205" y1="77" x2="228" y2="77"/>
+      <line x1="430" y1="70" x2="412" y2="70"/>
+      <line x1="412" y1="88" x2="430" y2="88"/>
+      <line x1="320" y1="145" x2="320" y2="111"/>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1d2433">
+      <text x="320" y="28" font-size="12" fill="#2f5d9e">AN AGENT</text>
+      <text x="115" y="72">System prompt</text>
+      <text x="115" y="92" font-size="11" fill="#5b6475">its job description</text>
+      <text x="320" y="72" fill="#ffffff">Language model</text>
+      <text x="320" y="92" font-size="11" fill="#dbe6f7">does the thinking</text>
+      <text x="522" y="72">Tools (optional)</text>
+      <text x="522" y="92" font-size="11" fill="#5b6475">functions it may request</text>
+      <text x="320" y="170">Node function</text>
+      <text x="320" y="190" font-size="11" fill="#5b6475">the Python code that runs one turn and decides what happens next</text>
+    </g>
+  </svg>
+  <figcaption>Figure 2. The four parts of an agent in this project.</figcaption>
+</figure>
+
+<div class="callout project"><b class="label">In this project</b>
+Two agents. The <b>Tutor</b> (<code>agents/tutor.py</code>) explains topics, presents quizzes and grades answers. The
+<b>Quiz Maker</b> (<code>agents/quiz_maker.py</code>) writes quizzes using its tool. Each file ends with an
+<code>AgentSpec</code>: a small record of the agent's name, description, prompt file, node function and tools.
+<code>agents/registry.py</code> lists all agents in one place.</div>
+
+<!-- 7 ------------------------------------------------------------------ -->
+<h2 id="c7">7. Tools and tool calling</h2>
+<p>A <b>tool</b> is a normal Python function that the model is allowed to ask for. The crucial point:
+<b>the model never runs the tool</b>. It replies with a structured <i>request</i> &mdash; "please call
+<code>get_topic_facts</code> with topic = gravity" &mdash; and <b>our code</b> runs the function and sends the result
+back. This back-and-forth is the <b>tool-calling loop</b>.</p>
+<p>The model never sees the Python code. It only sees the tool's <b>schema</b>: its name, a description (the
+function's docstring) and its arguments. That is why tool docstrings must be written clearly &mdash; they are
+instructions to the model.</p>
+
+<figure>
+  <svg viewBox="0 0 640 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sequence of the tool-calling loop between our code, the model and the tool">
+    <defs><marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d2433"/></marker></defs>
+    <g fill="#e8eef8" stroke="#2f5d9e" stroke-width="1.5">
+      <rect x="40" y="8" width="140" height="36" rx="6"/>
+      <rect x="250" y="8" width="140" height="36" rx="6"/>
+      <rect x="460" y="8" width="160" height="36" rx="6"/>
+    </g>
+    <g stroke="#9aa5b8" stroke-width="1.2" stroke-dasharray="5 4">
+      <line x1="110" y1="44" x2="110" y2="320"/>
+      <line x1="320" y1="44" x2="320" y2="320"/>
+      <line x1="540" y1="44" x2="540" y2="320"/>
+    </g>
+    <g stroke="#1d2433" stroke-width="1.5" marker-end="url(#m3)">
+      <line x1="112" y1="80" x2="316" y2="80"/>
+      <line x1="318" y1="125" x2="114" y2="125"/>
+      <line x1="112" y1="170" x2="536" y2="170"/>
+      <line x1="538" y1="215" x2="114" y2="215"/>
+      <line x1="112" y1="260" x2="316" y2="260"/>
+      <line x1="318" y1="305" x2="114" y2="305"/>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1d2433">
+      <text x="110" y="31">Our code</text>
+      <text x="320" y="31">Model</text>
+      <text x="540" y="31">Tool (Python)</text>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#1d2433">
+      <text x="214" y="73">1. conversation + tool schema</text>
+      <text x="214" y="118">2. request: get_topic_facts("gravity")</text>
+      <text x="324" y="163">3. our code runs the function</text>
+      <text x="324" y="208">4. result: "Notes on gravity: ..."</text>
+      <text x="214" y="253">5. result sent back (tool message)</text>
+      <text x="214" y="298">6. final answer: the quiz</text>
+    </g>
+  </svg>
+  <figcaption>Figure 3. The tool-calling loop. Steps 1&ndash;5 can repeat if the model asks for more tools.</figcaption>
+</figure>
+
+<p>From a real run of the project:</p>
+<pre><code>[quiz_maker] calling qwen2.5:7b (round 1, 4 messages, tools: get_topic_facts)
+[quiz_maker] model requested tool get_topic_facts({'topic': 'gravity'})
+[tool]       get_topic_facts('gravity'): matched 'gravity', returning 6 facts
+[quiz_maker] calling qwen2.5:7b (round 2, 6 messages, tools: get_topic_facts)
+[quiz_maker] quiz ready: 3 questions on 'gravity'</code></pre>
+<div class="callout project"><b class="label">In this project</b>
+The tool is <code>get_topic_facts</code> in <code>tools/topic_facts.py</code>; it looks topics up in
+<code>tools/data/topic_facts.json</code> (six topics). The loop is <code>call_model()</code> in
+<code>agents/base.py</code>, with each step numbered in the comments. Safety rules: tool errors go back to the model as
+text instead of crashing; at most 3 rounds; and a fix for a model quirk where the tool request is written as plain text.</div>
+
+<!-- 8 ------------------------------------------------------------------ -->
+<h2 id="c8">8. Structured output and JSON</h2>
+<p><b>JSON</b> is a simple text format for data, readable by both people and programs:</p>
+<pre><code>{"reason": "The student is answering the quiz questions.", "agent": "tutor"}</code></pre>
+<p>A <b>JSON schema</b> describes what valid JSON must look like (which fields, which types, which allowed values).
+Ollama's <b>structured output</b> feature takes a schema and <i>forces</i> the model's reply to match it. This turns a
+chatty model into a reliable decision-maker: the reply cannot wander off into prose.</p>
+<p>When structured output cannot be used, the program <b>validates</b> the reply instead. The project uses
+<b>pydantic</b>, a Python library where you describe the shape of data as a class and it checks every field.</p>
+<div class="callout project"><b class="label">In this project</b>
+Structured output is used by the router (<code>{"reason", "agent"}</code>), by the Quiz Maker's topic finder
+(<code>{"topic"}</code>) and to repair broken quiz JSON. The <code>Quiz</code> pydantic class in
+<code>agents/quiz_maker.py</code> rejects quizzes with missing fields, repeated choices, or an answer letter that has no
+matching choice.</div>
+
+<!-- 9 ------------------------------------------------------------------ -->
+<h2 id="c9" class="chapter">9. Multi-agent systems</h2>
+<p>One agent could try to do everything, but its instructions grow long and confusing, and small models follow long
+instructions poorly. A <b>multi-agent system</b> splits the work among <b>specialists</b>, each with a short, focused
+prompt and only the tools it needs &mdash; like a school with a teacher and an exam writer rather than one person doing both.</p>
+<p>Splitting raises three new questions, each answered by a later chapter:</p>
+<table>
+  <tr><th>Question</th><th>Answer</th></tr>
+  <tr><td>Who handles the user's message?</td><td>A <b>router</b> (chapter 10)</td></tr>
+  <tr><td>How does one agent get help from another?</td><td><b>Handoffs</b> (chapter 11)</td></tr>
+  <tr><td>What do the agents know about each other's work?</td><td>They share <b>one conversation history</b>; every message is labelled with the agent that wrote it</td></tr>
+</table>
+
+<!-- 10 ----------------------------------------------------------------- -->
+<h2 id="c10">10. Routers</h2>
+<p>A <b>router</b> reads the user's message and decides which agent should handle it. It is the receptionist of the
+system. In this project it runs for <b>every new message</b>, so the conversation can switch agents at any moment:</p>
+<pre><code>"what is photosynthesis?"            -> tutor
+"help me build a quiz on gravity"    -> quiz_maker
+"1-B, 2-A, 3-C"                      -> tutor   (grading)</code></pre>
+<p>The router itself uses a model. It is shown each agent's <b>description</b> (one sentence saying what the agent is
+for) plus the latest message, and must answer with structured output naming one agent. The description is therefore
+written <i>for the router</i>: it should say when to choose the agent and when not to.</p>
+<div class="callout project"><b class="label">In this project</b>
+<code>core/router.py</code>, with its prompt in <code>agents/prompts/router.md</code>. It never names a specific
+agent &mdash; it reads them all from the registry &mdash; so a new agent is routable without editing the router. Every
+choice appears in the log, e.g. <code>[router] -> tutor (The student is answering the quiz questions.)</code>.</div>
+
+<!-- 11 ----------------------------------------------------------------- -->
+<h2 id="c11">11. Handoffs</h2>
+<p>A <b>handoff</b> is one agent passing control to another in the middle of answering a message. There are two kinds:</p>
+
+<figure>
+  <svg viewBox="0 0 660 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Call and return compared with transfer">
+    <defs><marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f5d9e"/></marker></defs>
+    <line x1="330" y1="10" x2="330" y2="260" stroke="#d6dbe4" stroke-width="1.5"/>
+    <g fill="#ffffff" stroke="#2f5d9e" stroke-width="1.5">
+      <rect x="30" y="45" width="140" height="40" rx="8"/>
+      <rect x="30" y="125" width="140" height="40" rx="8"/>
+      <rect x="30" y="205" width="140" height="40" rx="8"/>
+      <rect x="400" y="45" width="140" height="40" rx="8"/>
+      <rect x="400" y="165" width="140" height="40" rx="8"/>
+    </g>
+    <g stroke="#2f5d9e" stroke-width="1.5" marker-end="url(#m4)">
+      <line x1="100" y1="85" x2="100" y2="123"/>
+      <line x1="100" y1="165" x2="100" y2="203"/>
+      <line x1="470" y1="85" x2="470" y2="163"/>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1d2433">
+      <text x="165" y="28" font-weight="bold" fill="#2f5d9e">1. Call and return</text>
+      <text x="100" y="70">tutor</text>
+      <text x="100" y="150">quiz_maker</text>
+      <text x="100" y="230">tutor (continues)</text>
+      <text x="495" y="28" font-weight="bold" fill="#2f5d9e">2. Transfer</text>
+      <text x="470" y="70">quiz_maker</text>
+      <text x="470" y="190">tutor</text>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="10.5" fill="#5b6475">
+      <text x="180" y="100">"HANDOFF: quiz_maker |</text>
+      <text x="180" y="114">quiz on gravity"</text>
+      <text x="180" y="142">tutor waits on the</text>
+      <text x="180" y="156">return stack</text>
+      <text x="180" y="184">done: control returns</text>
+      <text x="180" y="198">to whoever is waiting</text>
+      <text x="480" y="115">nobody is waiting, so</text>
+      <text x="480" y="129">it names the next agent</text>
+      <text x="480" y="143">itself: next_agent = tutor</text>
+      <text x="350" y="240">Like a relay race: no one</text>
+      <text x="350" y="254">expects the baton back.</text>
+      <text x="10" y="262">Like calling a function: the caller gets the result back.</text>
+    </g>
+  </svg>
+  <figcaption>Figure 4. The two kinds of handoff.</figcaption>
+</figure>
+
+<ul>
+  <li><b>Call and return</b> &mdash; "pause, call another agent, get its output, continue". The caller is pushed onto a
+    <b>return stack</b> (a list of agents waiting to get control back). When the called agent finishes, control goes to
+    whoever is on top of the stack.</li>
+  <li><b>Transfer</b> &mdash; "finish and trigger another". The agent simply names who runs next.</li>
+</ul>
+<p>A handoff can carry a <b>task</b> &mdash; the text after the <code>|</code> above &mdash; so the receiving agent is
+told exactly what to do rather than having to work it out from the history.</p>
+<div class="callout project"><b class="label">In this project</b>
+<code>core/handoff.py</code>. Agents only say "hand this to X"; a wrapper around every agent (<code>agent_node()</code>)
+does the bookkeeping, and stops after 3 handoffs per message so two agents can never pass work back and forth forever.
+The Tutor calls the Quiz Maker (call and return); the Quiz Maker, when the router picked it directly, transfers to the
+Tutor to show the quiz.</div>
+
+<!-- 12 ----------------------------------------------------------------- -->
+<h2 id="c12" class="chapter">12. Clarifying questions: pause and resume</h2>
+<p>Sometimes an agent cannot do its job yet: "make me a quiz" &mdash; on <i>what</i>? A good agent asks a
+<b>clarifying question</b>, <b>pauses</b>, and <b>resumes</b> exactly where it stopped once the user answers.</p>
+<p>LangGraph provides this with <code>interrupt()</code>. When a node calls it, the whole run stops in the middle and
+is saved. Later, the program sends the user's answer with <code>Command(resume=answer)</code>, and the run continues.
+One surprise: on resume, <b>the node that paused runs again from its first line</b>, and this time
+<code>interrupt()</code> returns the answer instead of stopping. So the pausing node must be cheap and safe to run twice
+&mdash; which is why the project gives pausing its own node, <code>ask_user</code>, separate from the agents.</p>
+
+<figure>
+  <svg viewBox="0 0 660 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Timeline of a run that pauses at ask_user, is saved, and resumes later">
+    <defs><marker id="m5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f5d9e"/></marker></defs>
+    <g fill="#ffffff" stroke="#2f5d9e" stroke-width="1.5">
+      <rect x="5" y="110" width="80" height="40" rx="8"/>
+      <rect x="105" y="110" width="100" height="40" rx="8"/>
+      <rect x="455" y="110" width="80" height="40" rx="8"/>
+      <rect x="555" y="110" width="100" height="40" rx="8"/>
+    </g>
+    <rect x="225" y="110" width="80" height="40" rx="8" fill="#fdf3e1" stroke="#9a6510" stroke-width="1.5"/>
+    <g fill="#e7f4ec" stroke="#2d7a4b" stroke-width="1.5">
+      <path d="M330,112 a50,9 0 0,0 100,0 a50,9 0 0,0 -100,0 v38 a50,9 0 0,0 100,0 v-38"/>
+    </g>
+    <g stroke="#2f5d9e" stroke-width="1.5" marker-end="url(#m5)">
+      <line x1="85" y1="130" x2="103" y2="130"/>
+      <line x1="205" y1="130" x2="223" y2="130"/>
+      <line x1="305" y1="130" x2="328" y2="130"/>
+      <line x1="430" y1="130" x2="453" y2="130"/>
+      <line x1="535" y1="130" x2="553" y2="130"/>
+    </g>
+    <g fill="#f4f6f9" stroke="#9aa5b8" stroke-width="1">
+      <rect x="5" y="20" width="150" height="40" rx="8"/>
+      <rect x="170" y="20" width="200" height="40" rx="8"/>
+      <rect x="455" y="20" width="150" height="40" rx="8"/>
+    </g>
+    <g stroke="#9aa5b8" stroke-width="1" stroke-dasharray="4 3">
+      <line x1="45" y1="60" x2="45" y2="108"/>
+      <line x1="265" y1="60" x2="265" y2="108"/>
+      <line x1="495" y1="60" x2="495" y2="108"/>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1d2433">
+      <text x="45" y="135">router</text>
+      <text x="155" y="135">quiz_maker</text>
+      <text x="265" y="135">ask_user</text>
+      <text x="380" y="134">Postgres</text>
+      <text x="495" y="135">ask_user</text>
+      <text x="605" y="135">quiz_maker</text>
+      <text x="80" y="44" font-size="11">You: make me a quiz</text>
+      <text x="270" y="38" font-size="10">quiz_maker asks: Which topic</text>
+      <text x="270" y="52" font-size="10">would you like the quiz to be about?</text>
+      <text x="530" y="44" font-size="11">You: volcanoes</text>
+      <text x="265" y="172" font-size="10.5" fill="#9a6510">interrupt(): PAUSE</text>
+      <text x="380" y="180" font-size="10.5" fill="#2d7a4b">run saved;</text>
+      <text x="380" y="193" font-size="10.5" fill="#2d7a4b">you may even quit</text>
+      <text x="495" y="172" font-size="10.5">runs again;</text>
+      <text x="495" y="185" font-size="10.5">returns "volcanoes"</text>
+      <text x="155" y="96" font-size="11" fill="#2f5d9e">RUN 1</text>
+      <text x="555" y="96" font-size="11" fill="#2f5d9e">RUN 2 (resumed)</text>
+    </g>
+  </svg>
+  <figcaption>Figure 5. A clarifying question splits one job into two runs, joined by a saved checkpoint.</figcaption>
+</figure>
+
+<p>Who decides to ask? Two styles appear in the project:</p>
+<table>
+  <tr><th>Agent</th><th>Who decides</th><th>How</th></tr>
+  <tr><td>Tutor</td><td>The model</td><td>When a request is vague ("explain it") it replies with the marker line <code>CLARIFY: &lt;question&gt;</code></td></tr>
+  <tr><td>Quiz Maker</td><td>Code</td><td>A small model call extracts the topic as <code>{"topic": "..."}</code>; then <code>if not topic:</code> the code asks</td></tr>
+</table>
+<div class="callout project"><b class="label">In this project</b>
+<code>core/clarify.py</code> holds the whole flow. When the user answers, the chat sees the conversation is paused and
+sends <code>Command(resume=...)</code> instead of a new message, so the answer skips the router and goes straight back
+to the agent that asked.</div>
+
+<!-- 13 ----------------------------------------------------------------- -->
+<h2 id="c13">13. Checkpointing, threads and PostgreSQL</h2>
+<p>Remember that the model has no memory (chapter 1), and a LangGraph graph forgets its state when a run ends. A
+<b>checkpointer</b> fixes this: it saves a <b>snapshot</b> of the state (a <i>checkpoint</i>) after every step, so the
+next run can pick up exactly where the last one stopped &mdash; tomorrow, after a reboot, or in the middle of a paused question.</p>
+<p>Snapshots are filed under a <b>thread id</b>. One thread is one conversation. Using the same thread id resumes that
+conversation; a new id starts a fresh one. Different threads never share memory.</p>
+
+<figure>
+  <svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two threads, each a chain of snapshots">
+    <defs><marker id="m6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f5d9e"/></marker></defs>
+    <g fill="#ffffff" stroke="#2f5d9e" stroke-width="1.5">
+      <rect x="160" y="30" width="100" height="40" rx="6"/>
+      <rect x="285" y="30" width="100" height="40" rx="6"/>
+      <rect x="410" y="30" width="110" height="40" rx="6"/>
+      <rect x="545" y="30" width="105" height="40" rx="6"/>
+      <rect x="160" y="130" width="100" height="40" rx="6"/>
+      <rect x="285" y="130" width="100" height="40" rx="6"/>
+      <rect x="410" y="130" width="110" height="40" rx="6"/>
+    </g>
+    <g stroke="#2f5d9e" stroke-width="1.5" marker-end="url(#m6)">
+      <line x1="260" y1="50" x2="283" y2="50"/>
+      <line x1="385" y1="50" x2="408" y2="50"/>
+      <line x1="520" y1="50" x2="543" y2="50"/>
+      <line x1="260" y1="150" x2="283" y2="150"/>
+      <line x1="385" y1="150" x2="408" y2="150"/>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1d2433">
+      <text x="210" y="55">input</text>
+      <text x="335" y="55">after router</text>
+      <text x="465" y="55">after quiz_maker</text>
+      <text x="597" y="55">after tutor</text>
+      <text x="210" y="155">input</text>
+      <text x="335" y="155">after router</text>
+      <text x="465" y="155">after tutor</text>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="11" fill="#1d2433">
+      <text x="5" y="46" font-weight="bold">Thread A</text>
+      <text x="5" y="62" fill="#5b6475">chat-20261101-1358</text>
+      <text x="5" y="146" font-weight="bold">Thread B</text>
+      <text x="5" y="162" fill="#5b6475">chat-20261101-0930</text>
+      <text x="160" y="95" fill="#5b6475">one quiz request = several snapshots; each points to the one before it</text>
+      <text x="160" y="192" fill="#5b6475">a different conversation: separate snapshots, separate memory</text>
+    </g>
+  </svg>
+  <figcaption>Figure 6. Checkpoints are saved after every step, grouped by thread.</figcaption>
+</figure>
+
+<p>The snapshots are stored in <b>PostgreSQL</b> (often "Postgres"), a free, widely used database. Because the
+conversation is in the database, the chat program only sends the <i>new</i> message to the graph; everything else is
+loaded from the latest checkpoint.</p>
+<div class="callout project"><b class="label">In this project</b>
+<code>infra/postgres.py</code> sets up LangGraph's <code>PostgresSaver</code>. Each chat start creates a new thread id
+such as <code>chat-20261101-135805</code>; <code>python chat.py --list</code> shows saved conversations and
+<code>--thread &lt;id&gt;</code> resumes one.</div>
+
+<!-- 14 ----------------------------------------------------------------- -->
+<h2 id="c14">14. Docker</h2>
+<p>Installing a database directly on your computer means user accounts, permissions and a service that runs forever.
+<b>Docker</b> avoids that: it runs software inside a sealed, disposable box called a <b>container</b>, built from a
+ready-made <b>image</b> (here, the official <code>postgres:16-alpine</code> image).</p>
+<ul>
+  <li><code>docker-compose.yml</code> describes the container: which image, the username and password, which port.</li>
+  <li><code>docker compose up -d</code> starts it in the background; <code>docker compose down -v</code> removes it and all its data.</li>
+  <li>The database's files live in a Docker <b>volume</b>, so conversations survive restarts.</li>
+  <li>The project uses port <b>5433</b> rather than Postgres's usual 5432, to avoid clashing with any Postgres already installed.</li>
+</ul>
+
+<!-- 15 ----------------------------------------------------------------- -->
+<h2 id="c15">15. Streaming</h2>
+<p>A model produces its answer one token at a time. <b>Streaming</b> shows those tokens as they arrive, so the reply
+appears word by word instead of after a long silence &mdash; important when a reply takes a minute.</p>
+<p>LangGraph offers two calls: <code>graph.invoke()</code> waits and returns the final result;
+<code>graph.stream()</code> hands over events while the graph is still running. The chat asks for two kinds:</p>
+<ul>
+  <li><b>"messages"</b> &mdash; each token, labelled with the node that produced it;</li>
+  <li><b>"updates"</b> &mdash; each node's changes, the moment that node finishes.</li>
+</ul>
+<p>Not everything should be streamed: the router's JSON and the Quiz Maker's quiz JSON are filtered out by node, and
+replies that start with <code>HANDOFF:</code> or <code>CLARIFY:</code> are held back by looking at their first few
+characters before printing anything.</p>
+<div class="callout project"><b class="label">In this project</b>
+<code>chat.py</code>, in particular <code>run_turn()</code> and the <code>ReplyStreamer</code> class.</div>
+
+<!-- 16 ----------------------------------------------------------------- -->
+<h2 id="c16" class="chapter">16. Tracing with MLflow</h2>
+<p>When something goes wrong in a multi-agent system, you need to know <i>exactly</i> what happened: which agent ran,
+what the model was sent, what came back, how long each step took. <b>Tracing</b> records all of this.</p>
+<ul>
+  <li>A <b>trace</b> is the record of one message you sent.</li>
+  <li>It is a tree of <b>spans</b>. Each span is one piece of work (a node, a model call, a tool call) with its inputs,
+    outputs, duration and labels.</li>
+  <li>A <b>session</b> groups the traces of one conversation.</li>
+</ul>
+<p><b>MLflow</b> is a free tool that stores traces (here in one file, <code>mlflow.db</code>) and shows them in a web
+page. A trace for a quiz request looks like this:</p>
+<pre><code>chat_turn                         your message, the replies, the whole conversation
+└── LangGraph
+    ├── router
+    │   └── route                 chosen agent + reason
+    │       └── ChatOllama        the model call
+    ├── quiz_maker
+    │   ├── quiz_maker:find_topic     topic: "gravity"
+    │   ├── agent:quiz_maker
+    │   │   ├── ChatOllama            the model asks for the tool
+    │   │   ├── tool:get_topic_facts  input: topic  -> output: the notes
+    │   │   └── ChatOllama            the model writes the quiz
+    │   └── handoff:quiz_maker->tutor
+    └── tutor                     presents the quiz (no model call)</code></pre>
+<p>Most spans are recorded <b>automatically</b> (<code>mlflow.langchain.autolog()</code> hooks into LangChain and
+LangGraph). The project adds its own spans where it wants clearer labels &mdash; above all, <b>which agent</b> did the work.</p>
+<div class="callout project"><b class="label">In this project</b>
+<code>infra/tracing.py</code>. View traces with
+<code>mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5000</code>, then open
+<code>http://127.0.0.1:5000</code> &rarr; study-helper &rarr; Traces (or Sessions).</div>
+
+<!-- 17 ----------------------------------------------------------------- -->
+<h2 id="c17">17. The supporting cast: venv, .env, logging</h2>
+<table>
+  <tr><th>Thing</th><th>What it is</th><th>Why the project uses it</th></tr>
+  <tr><td><b>Virtual environment</b> (<code>.venv</code>)</td><td>A private folder of Python packages for one project</td>
+      <td>The project's library versions cannot clash with other projects. Activate with <code>source .venv/bin/activate</code>.</td></tr>
+  <tr><td><b>requirements.txt</b></td><td>The list of packages to install</td><td><code>pip install -r requirements.txt</code> installs everything at once.</td></tr>
+  <tr><td><b>.env file</b></td><td>A text file of settings (<code>NAME=value</code>)</td>
+      <td>Change the model or database without editing Python. Read in one place: <code>core/config.py</code>.</td></tr>
+  <tr><td><b>Logging</b></td><td>One line printed per internal step</td>
+      <td>A live view of the flow: <code>[router] -> tutor</code>, <code>[tool] get_topic_facts(...)</code>. <code>LOG_LEVEL=DEBUG</code> shows full messages.</td></tr>
+</table>
+
+<!-- =================================================================== -->
+<!-- PART 2                                                              -->
+<!-- =================================================================== -->
+<h1 class="part">Part 2 &mdash; The project<small>How the building blocks fit together</small></h1>
+
+<!-- 18 ----------------------------------------------------------------- -->
+<h2 id="c18">18. What the Study Helper does</h2>
+<p>The Study Helper is a terminal chat with two agents:</p>
+<ul>
+  <li>The <b>Tutor</b> answers study questions, presents quizzes and grades your answers.</li>
+  <li>The <b>Quiz Maker</b> writes short multiple-choice quizzes, using study notes from its <code>get_topic_facts</code> tool.</li>
+</ul>
+<table>
+  <tr><th>You type</th><th>What happens</th></tr>
+  <tr><td>what is photosynthesis?</td><td>Router &rarr; Tutor explains</td></tr>
+  <tr><td>help me build a quiz on gravity</td><td>Router &rarr; Quiz Maker finds the topic &rarr; calls the tool &rarr; writes the quiz &rarr; hands to the Tutor, which shows the questions</td></tr>
+  <tr><td>1-B, 2-A, 3-C</td><td>Router &rarr; Tutor grades against the hidden answer key</td></tr>
+  <tr><td>make it harder</td><td>Router &rarr; Quiz Maker writes a harder quiz on the same topic</td></tr>
+  <tr><td>make me a quiz <i>(new chat)</i></td><td>Quiz Maker asks "Which topic?" and pauses until you answer</td></tr>
+  <tr><td>explain it <i>(new chat)</i></td><td>Tutor asks which topic and pauses</td></tr>
+</table>
+<p>Every conversation is saved in Postgres, every message is traced in MLflow, and replies stream word by word.</p>
+
+<!-- 19 ----------------------------------------------------------------- -->
+<h2 id="c19">19. The big picture</h2>
+<figure>
+  <svg viewBox="0 0 680 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture: you, chat.py, the LangGraph graph, Ollama, the tool, Postgres and MLflow">
+    <defs><marker id="m7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f5d9e"/></marker></defs>
+    <rect x="195" y="15" width="290" height="205" rx="12" fill="#f7f9fc" stroke="#2f5d9e" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <g fill="#ffffff" stroke="#2f5d9e" stroke-width="1.5">
+      <rect x="20" y="20" width="135" height="44" rx="8"/>
+      <rect x="20" y="105" width="135" height="54" rx="8"/>
+      <rect x="215" y="60" width="115" height="40" rx="8"/>
+      <rect x="350" y="60" width="115" height="40" rx="8"/>
+      <rect x="350" y="150" width="115" height="40" rx="8"/>
+      <rect x="215" y="150" width="115" height="40" rx="8"/>
+      <rect x="530" y="40" width="135" height="54" rx="8"/>
+      <rect x="530" y="140" width="135" height="54" rx="8"/>
+    </g>
+    <g fill="#e7f4ec" stroke="#2d7a4b" stroke-width="1.5">
+      <path d="M215,262 a55,10 0 0,0 110,0 a55,10 0 0,0 -110,0 v45 a55,10 0 0,0 110,0 v-45"/>
+      <path d="M380,262 a65,10 0 0,0 130,0 a65,10 0 0,0 -130,0 v45 a65,10 0 0,0 130,0 v-45"/>
+    </g>
+    <g stroke="#2f5d9e" stroke-width="1.5" fill="none" marker-end="url(#m7)">
+      <line x1="87" y1="64" x2="87" y2="103"/>
+      <line x1="72" y1="105" x2="72" y2="66"/>
+      <line x1="155" y1="132" x2="193" y2="132"/>
+      <line x1="330" y1="80" x2="348" y2="80"/>
+      <line x1="407" y1="100" x2="407" y2="148"/>
+      <line x1="485" y1="67" x2="528" y2="67"/>
+      <line x1="465" y1="170" x2="528" y2="167"/>
+      <line x1="270" y1="220" x2="270" y2="250"/>
+      <line x1="430" y1="220" x2="440" y2="250"/>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="12.5" text-anchor="middle" fill="#1d2433">
+      <text x="87" y="47">You (terminal)</text>
+      <text x="87" y="128">chat.py</text>
+      <text x="87" y="145" font-size="10.5" fill="#5b6475">input, streaming</text>
+      <text x="340" y="38" font-size="11" fill="#2f5d9e">LangGraph graph (core/graph.py)</text>
+      <text x="272" y="85">router</text>
+      <text x="407" y="85">tutor</text>
+      <text x="407" y="175">quiz_maker</text>
+      <text x="272" y="175">ask_user</text>
+      <text x="597" y="63">Ollama</text>
+      <text x="597" y="80" font-size="10.5" fill="#5b6475">qwen2.5:7b model</text>
+      <text x="597" y="163">get_topic_facts</text>
+      <text x="597" y="180" font-size="10.5" fill="#5b6475">tool + notes (JSON)</text>
+      <text x="270" y="292">PostgreSQL</text>
+      <text x="270" y="306" font-size="10.5" fill="#5b6475">in Docker</text>
+      <text x="445" y="292">MLflow</text>
+      <text x="445" y="306" font-size="10.5" fill="#5b6475">mlflow.db</text>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="10" fill="#5b6475">
+      <text x="280" y="240">save / load state</text>
+      <text x="445" y="240">spans</text>
+      <text x="412" y="128">handoffs</text>
+    </g>
+  </svg>
+  <figcaption>Figure 7. The parts of the system and how they talk to each other.</figcaption>
+</figure>
+<table>
+  <tr><th>Part</th><th>Job</th><th>Where</th></tr>
+  <tr><td>chat.py</td><td>Reads your input, runs the graph, streams the replies</td><td><code>chat.py</code></td></tr>
+  <tr><td>The graph</td><td>Router, agents and the pause node, wired together</td><td><code>core/graph.py</code></td></tr>
+  <tr><td>Agents</td><td>Tutor and Quiz Maker</td><td><code>agents/</code></td></tr>
+  <tr><td>Tool</td><td>get_topic_facts</td><td><code>tools/</code></td></tr>
+  <tr><td>Ollama</td><td>Runs the language model</td><td>outside the project (a program you install)</td></tr>
+  <tr><td>PostgreSQL</td><td>Stores checkpoints</td><td><code>infra/postgres.py</code>, <code>docker-compose.yml</code></td></tr>
+  <tr><td>MLflow</td><td>Stores traces</td><td><code>infra/tracing.py</code></td></tr>
+</table>
+
+<!-- 20 ----------------------------------------------------------------- -->
+<h2 id="c20" class="chapter">20. The graph of this project</h2>
+<figure>
+  <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The project graph: start, router, tutor, quiz maker, a where-next decision, end, ask_user">
+    <defs><marker id="m8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f5d9e"/></marker></defs>
+    <g fill="#ffffff" stroke="#2f5d9e" stroke-width="1.5">
+      <rect x="5" y="125" width="65" height="40" rx="20"/>
+      <rect x="95" y="120" width="100" height="50" rx="8"/>
+      <rect x="240" y="60" width="120" height="46" rx="8"/>
+      <rect x="240" y="180" width="120" height="46" rx="8"/>
+      <rect x="570" y="40" width="100" height="40" rx="20"/>
+    </g>
+    <rect x="570" y="200" width="100" height="46" rx="8" fill="#fdf3e1" stroke="#9a6510" stroke-width="1.5"/>
+    <polygon points="450,95 520,145 450,195 380,145" fill="#e8eef8" stroke="#2f5d9e" stroke-width="1.5"/>
+    <g stroke="#2f5d9e" stroke-width="1.5" fill="none" marker-end="url(#m8)">
+      <line x1="70" y1="145" x2="93" y2="145"/>
+      <line x1="195" y1="138" x2="238" y2="88"/>
+      <line x1="195" y1="152" x2="238" y2="200"/>
+      <line x1="360" y1="88" x2="406" y2="122"/>
+      <line x1="360" y1="200" x2="406" y2="168"/>
+      <line x1="505" y1="134" x2="568" y2="66"/>
+      <line x1="505" y1="156" x2="568" y2="218"/>
+      <path d="M450,95 L450,22 L300,22 L300,58"/>
+      <path d="M620,246 L620,285 L300,285 L300,228" stroke-dasharray="6 4"/>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="12.5" text-anchor="middle" fill="#1d2433">
+      <text x="37" y="150">START</text>
+      <text x="145" y="150">router</text>
+      <text x="300" y="88">tutor</text>
+      <text x="300" y="208">quiz_maker</text>
+      <text x="450" y="142" font-size="11">where</text>
+      <text x="450" y="156" font-size="11">next?</text>
+      <text x="620" y="65">END</text>
+      <text x="620" y="228">ask_user</text>
+    </g>
+    <g font-family="DejaVu Sans, Arial, sans-serif" font-size="10" fill="#5b6475">
+      <text x="460" y="17">handoff to another agent</text>
+      <text x="545" y="112">reply finished</text>
+      <text x="455" y="222">question pending</text>
+      <text x="330" y="279">resume: back to the agent that asked (pause in between)</text>
+    </g>
+  </svg>
+  <figcaption>Figure 8. Every message starts at the router. After each agent, "where next?" (<code>route_after_agent()</code>) picks: finish, hand off, or pause for a question.</figcaption>
+</figure>
+<p>"where next?" checks, in order: is a clarifying question waiting (go to <code>ask_user</code>)? Did a handoff name an
+agent (go there)? Is an agent waiting on the return stack (go back to it)? Otherwise, <code>END</code>. Neither the
+graph nor this decision mentions a specific agent; the agent nodes are created by looping over the registry.</p>
+
+<!-- 21 ----------------------------------------------------------------- -->
+<h2 id="c21">21. One message, start to finish</h2>
+<p>A real run. The conversation so far: you asked "what is photosynthesis?" and the Tutor answered. Now you type
+<b>help me build a quiz on gravity</b>.</p>
+<table>
+  <tr><th style="width:4%">#</th><th style="width:22%">Step</th><th>What happens</th></tr>
+  <tr><td>1</td><td>Input<br><code>chat.py</code></td><td>The chat reads your line. Is the conversation paused on a question? No &mdash; so it becomes a new message.</td></tr>
+  <tr><td>2</td><td>Trace opens<br><code>infra/tracing.py</code></td><td>A <code>chat_turn</code> span starts. Everything until the reply becomes one trace.</td></tr>
+  <tr><td>3</td><td>Checkpoint loaded<br><code>infra/postgres.py</code></td><td>LangGraph loads the thread's latest snapshot (2 messages) and appends yours. Snapshot saved.</td></tr>
+  <tr><td>4</td><td>Router<br><code>core/router.py</code></td><td>The model reads the agent descriptions and your message:<br><code>[router] -> quiz_maker (The student requested help in building a quiz...)</code></td></tr>
+  <tr><td>5</td><td>Find the topic<br><code>agents/quiz_maker.py</code></td><td>A small structured call returns <code>{"topic": "gravity"}</code>. A topic exists, so no question is asked.<br><code>[quiz_maker] topic: 'gravity'</code></td></tr>
+  <tr><td>6</td><td>Tool loop<br><code>agents/base.py</code></td><td>Round 1: the model requests <code>get_topic_facts('gravity')</code>; our code runs it; 6 facts go back. Round 2: the model writes the quiz as JSON.</td></tr>
+  <tr><td>7</td><td>Check &amp; store</td><td>pydantic validates the JSON. The quiz (with answers) goes into <code>state["quiz"]</code>, not into the chat. Chat message: "I made a 3-question quiz on gravity."</td></tr>
+  <tr><td>8</td><td>Handoff<br><code>core/handoff.py</code></td><td>Nobody called the Quiz Maker, so it transfers to the Tutor.<br><code>[handoff] quiz_maker -> tutor (transfer)</code></td></tr>
+  <tr><td>9</td><td>Tutor presents<br><code>agents/tutor.py</code></td><td>Plain Python formats the questions (no model call, no answers shown) and marks the quiz as presented. "Where next?" &rarr; END. Final snapshot saved.</td></tr>
+  <tr><td>10</td><td>Output<br><code>chat.py</code></td><td>The stream delivers each node's message as it finishes: the Quiz Maker's note, then the Tutor's quiz.</td></tr>
+  <tr><td>11</td><td>Trace closes</td><td>The <code>chat_turn</code> span records the replies, the agents involved and the whole conversation. MLflow saves the trace.</td></tr>
+</table>
+<p>Then you answer <b>1-B, 2-A, 3-C</b>: the router picks the Tutor, which recognises quiz answers and grades them
+against the stored key <b>in Python, in under a millisecond</b> &mdash; <code>[tutor] graded the quiz in code: 2/3</code>.</p>
+<div class="callout warn"><b class="label">Where the time goes</b>
+In that run, finding the topic took 22&nbsp;s, the tool request 59&nbsp;s and writing the quiz 83&nbsp;s, plus the
+router. The project's own code took a few milliseconds. On a CPU, almost all the waiting is the model.</div>
+
+<!-- 22 ----------------------------------------------------------------- -->
+<h2 id="c22" class="chapter">22. A clarifying question, start to finish</h2>
+<p>A new conversation, with no topic given:</p>
+<ol>
+  <li><b>You: make me a quiz.</b> The router picks the Quiz Maker. <code>find_topic()</code> returns an empty topic.</li>
+  <li><b>Code decides to ask.</b> The Quiz Maker returns the question and sets <code>pending_question</code> in the state.</li>
+  <li><b>"Where next?"</b> sees the pending question and goes to <code>ask_user</code>.</li>
+  <li><b>Pause.</b> <code>ask_user</code> calls <code>interrupt()</code>. The run stops and is saved in Postgres. The chat prints
+    <i>quiz_maker asks: Which topic would you like the quiz to be about?</i> You could quit now and come back later.</li>
+  <li><b>You: volcanoes.</b> The chat sees the conversation is paused, so it sends <code>Command(resume="volcanoes")</code>.
+    The router is skipped.</li>
+  <li><b>Resume.</b> <code>ask_user</code> runs again; <code>interrupt()</code> now returns "volcanoes". It adds your answer to
+    the conversation and sends control back to the Quiz Maker.</li>
+  <li><b>Carry on.</b> <code>find_topic()</code> now finds "volcanoes". The tool has no notes on volcanoes and says so, so the
+    model writes basic questions from its own knowledge. The rest is the same as chapter 21, steps 7&ndash;11.</li>
+</ol>
+<p>In MLflow this shows as two traces: the paused one, and the one for your answer, which contains a
+<code>clarification</code> span with the question and your answer.</p>
+
+<!-- 23 ----------------------------------------------------------------- -->
+<h2 id="c23">23. The life of a quiz</h2>
+<p>A quiz is <b>data</b>, not a chat message. It lives in <code>state["quiz"]</code>, so the answers never appear in
+the conversation, yet the Tutor can still grade:</p>
+<pre><code>{"topic": "gravity",
+ "questions": [{"question": "What keeps the planets in orbit around the Sun?",
+                "choices": ["Centrifugal force", "Centripetal force", "Gravity", "Electromagnetic force"],
+                "answer": "C",
+                "explanation": "Gravity keeps the planets in orbit around the Sun."}, ...],
+ "presented": true,
+ "graded": true}</code></pre>
+<table>
+  <tr><th>Stage</th><th>Who</th><th>Marks</th></tr>
+  <tr><td>Written and validated</td><td>Quiz Maker (model + pydantic)</td><td>&mdash;</td></tr>
+  <tr><td>Shown without answers</td><td>Tutor (Python)</td><td><code>presented: true</code></td></tr>
+  <tr><td>Answers graded</td><td>Tutor (Python)</td><td><code>graded: true</code></td></tr>
+  <tr><td>Questions discussed ("why was 2 wrong?")</td><td>Tutor (model, given the hidden answer key)</td><td>&mdash;</td></tr>
+</table>
+<p>Type <code>/quiz</code> in the chat to peek at the stored quiz with its answers.</p>
+
+<!-- 24 ----------------------------------------------------------------- -->
+<h2 id="c24">24. What the model does, what code does</h2>
+<p>The most useful lesson from building this project: <b>let the model do the language, and let code do the
+bookkeeping</b>. Everything that needs <i>understanding the student</i> is done by a model. Jobs with one exact right
+answer are done by Python, because a small model gets them wrong surprisingly often.</p>
+<table>
+  <tr><th>Job</th><th>Done by</th><th>Why</th></tr>
+  <tr><td>Choosing the agent for each message</td><td>Model (router)</td><td>Needs to understand what you mean</td></tr>
+  <tr><td>Explaining a topic</td><td>Model (Tutor)</td><td>Language</td></tr>
+  <tr><td>Reading the quiz topic from your sentence</td><td>Model (structured)</td><td>Needs understanding; the JSON shape keeps it on track</td></tr>
+  <tr><td>Calling the tool and writing questions</td><td>Model (Quiz Maker)</td><td>Language</td></tr>
+  <tr><td>Is the topic missing?</td><td>Code</td><td>The model kept asking "which topic?" even when told</td></tr>
+  <tr><td>Showing the quiz</td><td>Code</td><td>Instant, and cannot reveal answers</td></tr>
+  <tr><td>Grading "1-B, 2-A, 3-C"</td><td>Code</td><td>The model once marked a wrong answer right, and took 143&nbsp;s</td></tr>
+  <tr><td>Removing stray "A)" letters from choices</td><td>Code</td><td>The prompt said "no letters"; the model added them anyway</td></tr>
+</table>
+
+<!-- 25 ----------------------------------------------------------------- -->
+<h2 id="c25" class="chapter">25. Folder map</h2>
+<pre><code>MultAgentChatbot/
+├── chat.py                  The terminal chat (streaming) - start here
+├── HOW_IT_WORKS.md          One message followed end to end
+├── docs/                    Short explanations of each concept (and this guide)
+├── agents/                  One file per agent
+│   ├── base.py              AgentSpec, the model call + tool-calling loop
+│   ├── registry.py          The ONE list of all agents
+│   ├── tutor.py             Agent 1: explains, presents and grades
+│   ├── quiz_maker.py        Agent 2: writes quizzes with its tool
+│   └── prompts/             System prompts (Markdown), edit freely
+├── tools/
+│   ├── topic_facts.py       The get_topic_facts tool
+│   └── data/topic_facts.json   Study notes for six topics
+├── core/                    The machinery
+│   ├── config.py            Settings from .env
+│   ├── llm.py               Connection to Ollama
+│   ├── prompts.py           Loads the Markdown prompts
+│   ├── state.py             The shared state
+│   ├── router.py            Picks the agent per message
+│   ├── handoff.py           Handoffs + "where next?"
+│   ├── clarify.py           Pause, ask, resume
+│   ├── graph.py             Wires it all into a LangGraph graph
+│   └── logging_setup.py     The flow log
+├── infra/
+│   ├── postgres.py          Checkpointer (PostgreSQL)
+│   └── tracing.py           MLflow tracing
+├── scripts/
+│   ├── check_ollama.py      Checks the model and tool calling
+│   └── try_checkpoint.py    The chat without streaming
+├── docker-compose.yml       PostgreSQL container
+├── requirements.txt         Python packages
+└── .env.example             Settings template</code></pre>
+
+<!-- 26 ----------------------------------------------------------------- -->
+<h2 id="c26">26. Running it</h2>
+<pre><code># one-time setup (Ubuntu)
+curl -fsSL https://ollama.com/install.sh | sh      # install Ollama
+ollama pull qwen2.5:7b                              # download the model
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+docker compose up -d                                # start PostgreSQL
+python scripts/check_ollama.py                      # all checks should PASS
+
+# every time
+source .venv/bin/activate
+python chat.py                      # new conversation
+python chat.py --list               # saved conversations
+python chat.py --thread &lt;id&gt;       # resume one
+
+# in a second terminal: the trace viewer
+mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5000</code></pre>
+<p>Inside the chat: <code>/help</code>, <code>/new</code>, <code>/threads</code>, <code>/history</code>, <code>/quiz</code>, <code>/quit</code>.</p>
+
+<!-- 27 ----------------------------------------------------------------- -->
+<h2 id="c27">27. Adding a third agent</h2>
+<p>Because the router, the graph and the handoff code read everything from the registry, a new agent needs only three things:</p>
+<ol>
+  <li><b><code>agents/flashcards.py</code></b> &mdash; a node function and an <code>AgentSpec</code>:
+<pre><code>from agents.base import AgentSpec, run_agent
+
+def flashcards_node(state):
+    return run_agent(AGENT, state)
+
+AGENT = AgentSpec(
+    name="flashcards",
+    description="Makes flashcards for memorising facts. Choose it when the "
+                "student asks for flashcards or help memorising.",
+    prompt_file="flashcards.md",
+    node=flashcards_node,
+)</code></pre></li>
+  <li><b><code>agents/prompts/flashcards.md</code></b> &mdash; its system prompt.</li>
+  <li><b>One line in <code>agents/registry.py</code></b> &mdash; add <code>flashcards.AGENT</code> to the list.</li>
+</ol>
+<p>The router can now choose it, the Tutor can hand work to it, it gets its own colour in the chat, and checkpointing
+and tracing cover it automatically.</p>
+
+<!-- 28 ----------------------------------------------------------------- -->
+<h2 id="c28" class="chapter">28. Glossary</h2>
+<table>
+  <tr><th style="width:24%">Term</th><th>Meaning</th></tr>
+  <tr><td>Agent</td><td>A language model with a job (system prompt), optionally tools, and code that runs its turn.</td></tr>
+  <tr><td>AgentSpec</td><td>The record describing one agent in this project: name, description, prompt, node, tools.</td></tr>
+  <tr><td>Checkpoint</td><td>A saved snapshot of the graph's state after a step.</td></tr>
+  <tr><td>Checkpointer</td><td>The component that saves and loads checkpoints (here: PostgreSQL).</td></tr>
+  <tr><td>Clarifying question</td><td>A follow-up question an agent asks when a request is missing information.</td></tr>
+  <tr><td>Command</td><td>A LangGraph object a node returns to update the state and/or choose the next node, or to resume a paused run.</td></tr>
+  <tr><td>Conditional edge</td><td>A graph arrow whose destination is chosen at run time by a function.</td></tr>
+  <tr><td>Container / image</td><td>Docker's sealed box for running software / the template it is made from.</td></tr>
+  <tr><td>Description</td><td>One sentence per agent; the router reads it to choose an agent.</td></tr>
+  <tr><td>Edge</td><td>An arrow in a graph: which node runs next.</td></tr>
+  <tr><td>Handoff</td><td>One agent passing control to another: call-and-return or transfer.</td></tr>
+  <tr><td>interrupt()</td><td>LangGraph function that pauses a run until the program resumes it with an answer.</td></tr>
+  <tr><td>JSON / JSON schema</td><td>A text format for data / a description of what valid data looks like.</td></tr>
+  <tr><td>LangChain / LangGraph</td><td>Libraries for talking to models / for building programs as graphs of steps.</td></tr>
+  <tr><td>LLM</td><td>Large language model: predicts text that comes next.</td></tr>
+  <tr><td>MLflow</td><td>Tool that records and displays traces.</td></tr>
+  <tr><td>Node</td><td>A step in a graph; a Python function.</td></tr>
+  <tr><td>Ollama</td><td>Program that runs language models on your own computer.</td></tr>
+  <tr><td>Parameters (7B)</td><td>The numbers a model learned; 7B means 7 billion.</td></tr>
+  <tr><td>pydantic</td><td>Python library that checks data against a declared shape.</td></tr>
+  <tr><td>Reducer</td><td>Rule for merging a node's change into the state (e.g. append messages).</td></tr>
+  <tr><td>Registry</td><td>The single list of all agents (<code>agents/registry.py</code>).</td></tr>
+  <tr><td>Return stack</td><td>The list of agents waiting to get control back after calling another.</td></tr>
+  <tr><td>Router</td><td>The step that chooses which agent handles each new message.</td></tr>
+  <tr><td>Session</td><td>In MLflow, the group of traces from one conversation.</td></tr>
+  <tr><td>Span</td><td>One piece of work inside a trace, with inputs, outputs and timing.</td></tr>
+  <tr><td>State</td><td>The shared dictionary that flows through the graph.</td></tr>
+  <tr><td>Streaming</td><td>Showing a reply token by token as it is generated.</td></tr>
+  <tr><td>Structured output</td><td>Forcing a model's reply to match a JSON schema.</td></tr>
+  <tr><td>System prompt</td><td>The hidden first message giving a model its instructions.</td></tr>
+  <tr><td>Temperature</td><td>How varied (high) or predictable (low) the model's wording is.</td></tr>
+  <tr><td>Thread</td><td>One saved conversation, identified by a thread id.</td></tr>
+  <tr><td>Token</td><td>A small piece of text (about a word or part of one) that models read and write.</td></tr>
+  <tr><td>Tool / tool calling</td><td>A function a model may request / the loop where code runs it and returns the result.</td></tr>
+  <tr><td>Trace</td><td>The full record of one message: a tree of spans.</td></tr>
+  <tr><td>Transfer</td><td>A handoff where nobody waits for control to come back.</td></tr>
+</table>
+
+</body>
+</html>

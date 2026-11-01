@@ -1,0 +1,68 @@
+{
+  "photosynthesis": {
+    "aliases": ["how plants make food", "plant food"],
+    "facts": [
+      "Photosynthesis is the process plants, algae and some bacteria use to turn light energy into chemical energy stored in sugar (glucose).",
+      "It uses carbon dioxide and water, and releases oxygen as a by-product.",
+      "The overall equation is 6CO2 + 6H2O + light energy -> C6H12O6 (glucose) + 6O2.",
+      "In plants it happens mainly in chloroplasts, which contain the green pigment chlorophyll.",
+      "It has two stages: the light-dependent reactions (in the thylakoid membranes) and the Calvin cycle (in the stroma).",
+      "Chlorophyll absorbs mostly red and blue light and reflects green light, which is why leaves look green."
+    ]
+  },
+  "gravity": {
+    "aliases": ["gravitation"],
+    "facts": [
+      "Gravity is the force by which objects with mass attract each other.",
+      "Newton's law of universal gravitation says the force grows with the masses of the two objects and weakens with the square of the distance between them.",
+      "Near Earth's surface, a freely falling object accelerates at about 9.8 m/s^2 (ignoring air resistance).",
+      "Einstein's general theory of relativity describes gravity as mass and energy curving spacetime.",
+      "The Moon's surface gravity is about one-sixth of Earth's.",
+      "Gravity keeps the planets in orbit around the Sun, and the Moon's gravity is the main cause of ocean tides."
+    ]
+  },
+  "solar system": {
+    "aliases": ["planets", "the solar system"],
+    "facts": [
+      "The solar system has eight planets: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus and Neptune.",
+      "The Sun contains about 99.8% of the solar system's mass.",
+      "Jupiter is the largest planet.",
+      "Mercury is the closest planet to the Sun, but Venus is the hottest because its thick carbon dioxide atmosphere traps heat.",
+      "Pluto was reclassified as a dwarf planet by the International Astronomical Union in 2006.",
+      "Sunlight takes about 8 minutes and 20 seconds to reach Earth."
+    ]
+  },
+  "water cycle": {
+    "aliases": ["the water cycle", "hydrologic cycle"],
+    "facts": [
+      "The water cycle is the continuous movement of water on, above and below Earth's surface.",
+      "Its main stages are evaporation, condensation, precipitation and collection (runoff and soaking into the ground).",
+      "Transpiration is when plants release water vapour through their leaves.",
+      "Energy from the Sun drives evaporation.",
+      "About 97% of Earth's water is salt water in the oceans.",
+      "Clouds form when water vapour cools and condenses into tiny droplets around particles of dust."
+    ]
+  },
+  "cells": {
+    "aliases": ["cell", "cell biology", "the cell"],
+    "facts": [
+      "The cell is the basic unit of life.",
+      "Prokaryotic cells, such as bacteria, have no nucleus; eukaryotic cells, such as plant, animal and fungal cells, do.",
+      "The nucleus contains the cell's DNA.",
+      "Mitochondria release energy from food through cellular respiration, producing ATP.",
+      "Plant cells have a cell wall and chloroplasts; animal cells do not.",
+      "The cell membrane controls what enters and leaves the cell."
+    ]
+  },
+  "french revolution": {
+    "aliases": ["the french revolution"],
+    "facts": [
+      "The French Revolution began in 1789; the storming of the Bastille took place on 14 July 1789.",
+      "Its causes included a government financial crisis, food shortages, inequality between the three Estates, and Enlightenment ideas.",
+      "The Declaration of the Rights of Man and of the Citizen was adopted in August 1789.",
+      "King Louis XVI was executed in January 1793.",
+      "The Reign of Terror (1793-1794) was led by the Committee of Public Safety, in which Robespierre was a leading figure.",
+      "The revolutionary period is usually said to end in 1799, when Napoleon Bonaparte took power in a coup."
+    ]
+  }
+}

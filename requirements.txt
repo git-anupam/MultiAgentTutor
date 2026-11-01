@@ -1,0 +1,56 @@
+# ---------------------------------------------------------------------------
+# Python dependencies for the multi-agent study helper.
+#
+# Everything here is free and open source. There are no paid API keys anywhere
+# in this project: the language model runs on your own machine via Ollama.
+#
+# Install with:
+#     pip install -r requirements.txt
+# ---------------------------------------------------------------------------
+
+# --- Talking to the local model --------------------------------------------
+# LangChain's Ollama integration. Gives us `ChatOllama`, a chat model object
+# that speaks to the Ollama server running on localhost:11434.
+langchain-ollama>=0.2,<2.0
+
+# --- The agent graph --------------------------------------------------------
+# LangGraph is the library that lets us describe our agents as a graph of
+# "nodes" (steps) and "edges" (arrows between steps). It is what makes the
+# router, the handoffs and the pause/resume behaviour possible.
+langgraph>=0.3,<2.0
+
+# Core LangChain types: messages (HumanMessage, AIMessage, ToolMessage) and
+# the `@tool` decorator we use to define Agent 2's tool.
+langchain-core>=0.3,<2.0
+
+# --- Checkpointing (added in step 3) ---------------------------------------
+# LangGraph's PostgreSQL checkpointer. A "checkpoint" is a saved snapshot of
+# the conversation, so we can stop the program and pick the chat back up.
+langgraph-checkpoint-postgres>=2.0,<3.0
+
+# The PostgreSQL driver the checkpointer uses. The `[binary,pool]` extras give
+# us prebuilt C libraries (no compiler needed) and connection pooling.
+psycopg[binary,pool]>=3.2,<4.0
+
+# --- Tracing (added in step 4) ---------------------------------------------
+# MLflow records a "trace" of every agent call, tool call and model call so we
+# can open a web UI and see exactly what happened inside a conversation.
+# Version 3 is required: it nests our own spans and the automatic LangGraph
+# spans into a single tree.
+mlflow>=3.1,<4.0
+
+# The main LangChain package. We do not import it ourselves, but MLflow's
+# automatic LangChain/LangGraph tracing (`mlflow.langchain.autolog()`) uses it.
+langchain>=0.3,<2.0
+
+# --- Configuration ----------------------------------------------------------
+# Reads a `.env` file into environment variables, so the model name and
+# database URL live in one editable text file instead of in the Python code.
+python-dotenv>=1.0,<2.0
+
+# ---------------------------------------------------------------------------
+# NOTE ON VERSIONS
+# The ranges above are deliberately loose so `pip install` just works. If a
+# future release ever breaks an import, run `pip freeze > requirements.lock`
+# once things work, and install from that file instead.
+# ---------------------------------------------------------------------------
